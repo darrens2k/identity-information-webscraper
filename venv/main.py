@@ -3,7 +3,6 @@ import selenium
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import time
-from tools import dictionaryParser
 
 # define sample information about target person
 name = "Darren Singh"
@@ -11,8 +10,43 @@ location = "Toronto"
 occupation = "Student"
 school = "York University"
 
+
+class Target:
+    '''A class for the target person to store the attributes of the target.'''
+    # define constructor with input dictionary as a parameter
+    def __init__(self, inputDict):
+        # may be put a try-except here incase these attributes are not in the inputDict
+        # commonly accessed attributes
+        self.name = inputDict.get("name")
+        self.loc = inputDict.get("loc")
+        self.job = inputDict.get("job")
+        self.school = inputDict.get("School")
+
+        # define list to store the above attributes and all other attributes in the dictionary
+        self.attributes = []
+
+        # iterate through the dictionary with a for loop
+        for x in inputDict.values():
+            self.attributes.append(x)
+
 # define dictionary with the sample input information
 sampleDict = {"name": name, "loc": location, "job": occupation, "School": school}
+
+# create instance of target class
+person = Target(sampleDict)
+
+
+# maybe let each target class contain an array of results, or the results of each type
+class Result:
+    '''A class to store the results, a result being a website or social media profile that was searched. It will store the url and score of the result.
+    The score is determined by how many attributes of the target the result contains'''
+    def __init__(self, url):
+        self.score = 0
+        self.url = url
+
+    def setScore(self, score):
+        self.score = score
+
 
 # locate chrome driver
 browser = webdriver.Chrome('C:\\Users\\d\\Downloads\\chromedriver_win32\\chromedriver.exe')
@@ -24,12 +58,7 @@ browser = webdriver.Chrome('C:\\Users\\d\\Downloads\\chromedriver_win32\\chromed
 # if the code is crashing, the sleep value may need to be increased
 
 
-def instagramSearch(username, password, inputDict, sleep = 5):
-
-    # call the dictionary parser to extract useful attributes for the search function
-    name, loc, job, school, attributes = dictionaryParser(inputDict)
-
-    # later on store the number of attributes in the dictionary so the social media profiles can be used
+def instagramSearch(username, password, target, sleep = 5):
 
     url = "https://www.instagram.com"
     browser.get(url)
@@ -55,11 +84,15 @@ def instagramSearch(username, password, inputDict, sleep = 5):
     # search profiles using the name attribute of the target
     time.sleep(sleep)
     searchBar = browser.find_element("xpath", "//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/input")
-    searchBar.send_keys(name)
+    searchBar.send_keys(target.name)
 
     # clicking on first element in drop down menu
     time.sleep(sleep)
-    browser.find_element("xpath","//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[1]/a/div").click()
+    profile = browser.find_element("xpath","//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[1]/a/div")
+    profile.click()
+
+    # create instance of result class with this url
+    result = Result(browser.current_url)
 
     # retrieving text of the instagram bio of the selected profile
     time.sleep(sleep)
@@ -70,12 +103,24 @@ def instagramSearch(username, password, inputDict, sleep = 5):
 
     # search the text in the bio for attributes about the person
     # use the find() method to do this, it finds a word in a string and returns the index, if it does not find it, it returns -1
+        # one thing to look into is to check the bio for abbreviations of the attributes, or simply the occurence of a few of the characters but that will increase runtime
     # use loops to check if each of the attributes exists in the bio
-    for attribute in attributes:
+    for attribute in target.attributes:
         for sentence in bioText:
             index = sentence.find(attribute)
+            # -1 is returned if the attribute was not found in the bio
             if index != -1:
-                # do something there like award a point
+                result.score += 1
+                print("Found: " + attribute)
+        print("Checked for: " + attribute)
+    # once the scoring method is implemented, define this as a function which will take some text as an input and search through it for attributes
 
-instagramSearch("tester77707", "tester789", sampleDict, sleep=5)
+instagramSearch("tester77707", "tester789", person, sleep=3)
 
+
+# these are the x paths of the first 3 results in the drop down menu in the instagram. Notice the second last div[i] increases each time. Therefore it can be the counter in a loop.
+# a loop can be used to go through the profiles in the drop down menu and sift through their bios, let the number of iterations of the loop be a parameter of the function
+"//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[1]/a/div"
+"//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[2]/a/div"
+"//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[3]/a/div"
+# once the function can go through the profiles in the drop down menu, then focus on making the search algorithm more accurate or creating the linkedin search function
