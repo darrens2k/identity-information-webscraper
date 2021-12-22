@@ -4,39 +4,58 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import time
 
-# define sample information about target person
-name = "Darren Singh"
-location = "Toronto"
-occupation = "Student"
-school = "York University"
-
 
 class Target:
     '''A class for the target person to store the attributes of the target.'''
-    # define constructor with input dictionary as a parameter
-    def __init__(self, inputDict):
-        # may be put a try-except here incase these attributes are not in the inputDict
-        # commonly accessed attributes
-        self.name = inputDict.get("name")
-        self.loc = inputDict.get("loc")
-        self.job = inputDict.get("job")
-        self.school = inputDict.get("School")
+    # define constructor with parameters as simple strings the user could input. Final attribute is a comma separated strng the user could enter
+    # the attributes parameter is meant to encapsulate words, abberivations, or phrases one would expect to find in sources related to the target
+    def __init__(self, name, job, location, school, attributes):
+        # may be put a try-except here incase these attributes are null, will come to this later
+            # likely will make these the mandatory attributes, minimum required to do searches
+        # these are the minimum required attributes to do searches
+        self.name = name
+        self.loc = location
+        self.job = job
+        self.school = school
 
-        # define list to store the above attributes and all other attributes in the dictionary
-        self.attributes = []
+        # the attributes parameter must be converted from a comma separated string into a list of strings using the .split() function
+        # attributes will be used to search profiles and webpages
+        extras = attributes.split(", ")
 
-        # iterate through the dictionary with a for loop
-        for x in inputDict.values():
-            self.attributes.append(x)
+        # add common attributes to the list so they can be used in searches as well
+        extras.extend((self.name, self.loc, self.job, self.school))
+        self.attributes = extras
+
 
         # create list to store search results of instagramSearch, each element of the list is of type Result. List can be later used to rank search results for user
         self.instagramResults = []
 
-# define dictionary with the sample input information
-sampleDict = {"name": name, "loc": location, "job": occupation, "School": school}
+    # define a function to return the instagram results, ordered by the highest score
+    def getInstagramResults(self):
+        s = ""
+
+        # sort the instagram results by descending score using the sort() function, the key is a simple lambda function to check that the score of the result is
+        self.instagramResults.sort(reverse=True, key=lambda x: x.score)
+
+        # create easy to read string for the user and return it
+        for i in range(len(self.instagramResults)):
+            s += "Result at: " + self.instagramResults[i].url + " matched " + str(self.instagramResults[i].score) + " out of " + str(len(self.attributes)) + " attrbutes \n"
+
+        return s
+
+# define sample inputs for target person
+name = "Darren Singh"
+location = "Toronto"
+occupation = "Student"
+school = "York University"
+attributes = "YorkU, YU, Astrophysics, Computer Science"
+
 
 # create instance of target class
-person = Target(sampleDict)
+darren = Target(name, occupation, location, school, attributes)
+
+# create second test instance
+lauren = Target("Lauren Nazareth", "Student", "Toronto", "Wilfred Laurier University", "wlu, math, finance, markham")
 
 
 # maybe let each target class contain an array of results, or the results of each type
@@ -46,9 +65,6 @@ class Result:
     def __init__(self, url):
         self.score = 0
         self.url = url
-
-    def setScore(self, score):
-        self.score = score
 
 
 # locate chrome driver
@@ -118,8 +134,6 @@ def instagramSearch(username, password, target, sleep = 5, iterations = 5):
                 # -1 is returned if the attribute was not found in the bio
                 if index != -1:
                     result.score += 1
-                    print("Found: " + attribute)
-            print("Checked for: " + attribute)
         # once the scoring method is implemented, define this as a function which will take some text as an input and search through it for attributes if code is repeated in other search functions
 
         # add the result to the instagramResults of the target so it can accessed later if necessary
@@ -129,12 +143,7 @@ def instagramSearch(username, password, target, sleep = 5, iterations = 5):
         browser.back()
 
 
-instagramSearch("tester77707", "tester789", person, sleep=3, iterations=3)
+instagramSearch("tester77707", "tester789", lauren, sleep=3, iterations=5)
 
 
-# these are the x paths of the first 3 results in the drop down menu in the instagram. Notice the second last div[i] increases each time. Therefore it can be the counter in a loop.
-# a loop can be used to go through the profiles in the drop down menu and sift through their bios, let the number of iterations of the loop be a parameter of the function
-"//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[1]/a/div"
-"//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[2]/a/div"
-"//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[3]/a/div"
-# once the function can go through the profiles in the drop down menu, then focus on making the search algorithm more accurate or creating the linkedin search function
+print(lauren.getInstagramResults())
