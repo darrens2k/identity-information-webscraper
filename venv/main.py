@@ -29,6 +29,9 @@ class Target:
         for x in inputDict.values():
             self.attributes.append(x)
 
+        # create list to store search results of instagramSearch, each element of the list is of type Result. List can be later used to rank search results for user
+        self.instagramResults = []
+
 # define dictionary with the sample input information
 sampleDict = {"name": name, "loc": location, "job": occupation, "School": school}
 
@@ -56,9 +59,10 @@ browser = webdriver.Chrome('C:\\Users\\d\\Downloads\\chromedriver_win32\\chromed
     # 5 seconds works well for an internet speed of 200mb/s down and 10mb/s up, with 8gb of ram and an 8th gen laptop i5
     # 3 seconds works well for the same internet speed but with 32gb of ram and a 10th gen desktop i7
 # if the code is crashing, the sleep value may need to be increased
+# iterations is the number of search results that are checked
 
 
-def instagramSearch(username, password, target, sleep = 5):
+def instagramSearch(username, password, target, sleep = 5, iterations = 5):
 
     url = "https://www.instagram.com"
     browser.get(url)
@@ -81,41 +85,51 @@ def instagramSearch(username, password, target, sleep = 5):
     time.sleep(sleep)
     browser.find_element("xpath", "/html/body/div[5]/div/div/div/div[3]/button[2]").click()
 
-    # search profiles using the name attribute of the target
-    time.sleep(sleep)
-    searchBar = browser.find_element("xpath", "//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/input")
-    searchBar.send_keys(target.name)
+    # creating loop to go through the number of search results indicated by the iterations parameter
+    for i in range(1, iterations + 1):
 
-    # clicking on first element in drop down menu
-    time.sleep(sleep)
-    profile = browser.find_element("xpath","//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[1]/a/div")
-    profile.click()
+        # search profiles using the name of the target
+        time.sleep(sleep)
+        searchBar = browser.find_element("xpath", "//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/input")
+        searchBar.send_keys(target.name)
 
-    # create instance of result class with this url
-    result = Result(browser.current_url)
+        # clicking on first element in drop down menu
+        time.sleep(sleep)
+        profile = browser.find_element("xpath","//*[@id='react-root']/section/nav/div[2]/div/div/div[2]/div[3]/div/div[2]/div/div[" + str(i) + "]/a/div")
+        profile.click()
 
-    # retrieving text of the instagram bio of the selected profile
-    time.sleep(sleep)
-    bio = browser.find_element("xpath", "//*[@id='react-root']/section/main/div/header/section/div[2]/span").get_attribute('innerHTML')
+        # create instance of result class with this url
+        result = Result(browser.current_url)
 
-    # convert the text in the bio into a list
-    bioText = bio.split("<br>")
+        # retrieving text of the instagram bio of the selected profile
+        time.sleep(sleep)
+        bio = browser.find_element("xpath", "//*[@id='react-root']/section/main/div/header/section/div[2]/span").get_attribute('innerHTML')
 
-    # search the text in the bio for attributes about the person
-    # use the find() method to do this, it finds a word in a string and returns the index, if it does not find it, it returns -1
-        # one thing to look into is to check the bio for abbreviations of the attributes, or simply the occurence of a few of the characters but that will increase runtime
-    # use loops to check if each of the attributes exists in the bio
-    for attribute in target.attributes:
-        for sentence in bioText:
-            index = sentence.find(attribute)
-            # -1 is returned if the attribute was not found in the bio
-            if index != -1:
-                result.score += 1
-                print("Found: " + attribute)
-        print("Checked for: " + attribute)
-    # once the scoring method is implemented, define this as a function which will take some text as an input and search through it for attributes
+        # convert the text in the bio into a list
+        bioText = bio.split("<br>")
 
-instagramSearch("tester77707", "tester789", person, sleep=3)
+        # search the text in the bio for attributes about the person
+        # use the find() method to do this, it finds a word in a string and returns the index, if it does not find it, it returns -1
+            # one thing to look into is to check the bio for abbreviations of the attributes, or simply the occurence of a few of the characters but that will increase runtime
+        # use loops to check if each of the attributes exists in the bio
+        for attribute in target.attributes:
+            for sentence in bioText:
+                index = sentence.find(attribute)
+                # -1 is returned if the attribute was not found in the bio
+                if index != -1:
+                    result.score += 1
+                    print("Found: " + attribute)
+            print("Checked for: " + attribute)
+        # once the scoring method is implemented, define this as a function which will take some text as an input and search through it for attributes if code is repeated in other search functions
+
+        # add the result to the instagramResults of the target so it can accessed later if necessary
+        target.instagramResults.append(result)
+
+        # go back to the previous page so the next search result can be clicked
+        browser.back()
+
+
+instagramSearch("tester77707", "tester789", person, sleep=3, iterations=3)
 
 
 # these are the x paths of the first 3 results in the drop down menu in the instagram. Notice the second last div[i] increases each time. Therefore it can be the counter in a loop.
