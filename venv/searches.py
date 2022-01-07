@@ -46,7 +46,7 @@ def instagramSearch(username, password, target, sleep = 5, iterations = 5):
     time.sleep(sleep)
     browser.find_element("xpath", "//*[@id='react-root']/section/main/div/div/div/div/button").click()
     time.sleep(sleep)
-    browser.find_element("xpath", "/html/body/div[5]/div/div/div/div[3]/button[2]").click()
+    browser.find_element("xpath", "/html/body/div[6]/div/div/div/div[3]/button[2]").click()
 
     # creating loop to go through the number of search results indicated by the iterations parameter
     for i in range(1, iterations + 1):
@@ -99,7 +99,46 @@ def instagramSearch(username, password, target, sleep = 5, iterations = 5):
         # a try-except might be the solution
 
 
-# begin work on the linkedinSearch() function
 # create function to log into LinkedIn and search for the target
-def linkedinSearch(username, password, sleep = 5):
-    # first step is to create a fake LinkedIn account
+def linkedinSearch(username, password, target, sleep = 5):
+    # locate chrome driver
+    browser = webdriver.Chrome('C:\\Users\\d\\Downloads\\chromedriver_win32\\chromedriver.exe')
+
+    # open webpage
+    url = "https://www.linkedin.com"
+    browser.get(url)
+
+    # give page time to load
+    time.sleep(sleep)
+
+    # when doing this using a fake account, make sure the account is set-up such that popups do not occur asking for things like a phone number or email verification etc.
+
+    # type in username and password
+    usernameField = browser.find_element("xpath", "//*[@id='session_key']")
+    usernameField.send_keys(username)
+    passwordField = browser.find_element("xpath", "//*[@id='session_password']")
+    passwordField.send_keys(password)
+
+    # click submit
+    browser.find_element("xpath", "//*[@id='main-content']/section[1]/div/div/form/button").click()
+    time.sleep(sleep)
+
+    # locate search bar
+    searchBar = browser.find_element("xpath", "//*[@id='global-nav-typeahead']/input")
+    searchBar.send_keys(target.name)
+    searchBar.send_keys(Keys.RETURN)
+    time.sleep(sleep)
+
+    # now begin inputting filters
+
+    # first click on the all filters button
+    browser.find_element("id", "ember244").click()
+    # next steps are to use the attributes of the target to apply filters
+    # each attribtue can apply a filter so long as the attribute is not null, check this with an if statement
+
+
+
+
+
+    # the window closes when the code finishes running, just doing this so I can interact with the window after the code finishes running
+    time.sleep(50)

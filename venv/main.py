@@ -1,9 +1,9 @@
 # Tester File
 
 # import necessary modules
-from searches import Result, instagramSearch
+from searches import instagramSearch, linkedinSearch
 from target import Target
-
+import time
 
 # define sample inputs for target person
 name = "Darren Singh"
@@ -19,7 +19,11 @@ darren = Target(name, occupation, location, school, attributes)
 lauren = Target("Lauren Nazareth", "Student", "Toronto", "Wilfred Laurier University", "wlu, math, finance, markham")
 
 # test call to instargramSearch() Function
-instagramSearch("tester77707", "tester789", lauren, sleep=5, iterations=3)
+# instagramSearch("tester77707", "tester789", lauren, sleep=5, iterations=3)
 
 # test print
-print(lauren.getInstagramResults())
+# print(lauren.getInstagramResults())
+
+# testing linkedinSearch function
+linkedinSearch("testerduster8@gmail.com", "tester789", lauren)
+
